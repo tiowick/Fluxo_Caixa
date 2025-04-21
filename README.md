@@ -10,6 +10,14 @@ FluxoCaixa é uma API C# para registro de lançamentos financeiros (créditos e 
 - **Isolamento**: falha no serviço de consolidação não interrompe registro de lançamentos.
 - **Segurança**: Autenticação JWT, CORS configurável e segredos em `appsettings.json` (recomenda-se variáveis de ambiente).
 
+## Por que escolhi este design
+Como desenvolvedor, optei por este monolito modular porque:
+- **Modularidade e manutenção:** isola domínios e facilita testes e evolução.
+- **Desempenho inicial:** comunicação em memória sem overhead de rede.
+- **Resiliência:** retry e circuit breaker garantem disponibilidade contínua.
+- **Escalabilidade futura:** módulos podem evoluir em microsserviços conforme a demanda.
+- **Simplicidade de deploy:** único artefato e pipeline simplificam o processo de entrega.
+
 ## Fluxograma Atual
 ```mermaid
 graph TD
