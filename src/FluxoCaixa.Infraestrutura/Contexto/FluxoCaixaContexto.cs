@@ -8,6 +8,8 @@ namespace FluxoCaixa.Infraestrutura.Contexto
     {
         public FluxoCaixaContexto(DbContextOptions<FluxoCaixaContexto> options) : base(options)
         {
+             ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+             ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
         public DbSet<DinheiroEntrada> Lancamentos { get; set; }
