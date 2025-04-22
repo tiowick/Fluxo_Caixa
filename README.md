@@ -76,10 +76,15 @@ flowchart TD
 5. **Swagger**  
    Abra no navegador: `https://localhost:5001/swagger`
 
-6. **Executar testes**  
+6. **Executar testes unitários**  
+   No diretório raiz do projeto:  
+   ```bash
+   dotnet test Fluxo_Caixa.sln
+   ```
+   Ou no diretório de testes:  
    ```bash
    cd tests
-   dotnet test
+   dotnet test FluxoCaixa.Tests.csproj
    ```
 
 ## Por que esta abordagem?
