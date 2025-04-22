@@ -40,7 +40,7 @@ namespace FluxoCaixa.Dominio.Entidades.Entrada
 
         public decimal ObterValorCalculado()
         {
-            return Tipo == TipoEntrada.credito ? Quantidade : Quantidade;
+            return Tipo == TipoEntrada.credito ? Quantidade : -Quantidade;
         }
     }
 }
