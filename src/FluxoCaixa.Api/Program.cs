@@ -113,7 +113,7 @@ builder.Services.AddCors(options =>
 
     options.AddPolicy("Production", builder =>
         builder.WithOrigins("https://localhost:7150")
-               .WithMethods("POST")
+               .WithMethods("POST", "GET")
                .AllowAnyHeader());
 });
 

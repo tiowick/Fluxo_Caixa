@@ -1,6 +1,7 @@
 # FluxoCaixa
 
-API em C# para controle de lançamentos financeiros e consolidação diária de saldos, projetada com Clean Architecture para fácil evolução em microsserviços.
+API em C# para controle de lançamentos financeiros e consolidação diária de saldos,
+projetada com Clean Architecture para fácil evolução em microsserviços.
 
 ## Tecnologias
 
@@ -97,3 +98,35 @@ flowchart TD
 - Containerização (Docker, Kubernetes)  
 - CI/CD (GitHub Actions, Azure DevOps)  
 - Monitoramento e métricas (Prometheus, Application Insights)
+
+## Passos para Evolução para Microsserviços
+Para evoluir esse monolito para uma arquitetura de microserviços, faria os seguintes passos:
+
+- **Extrair dois projetos de API separados:**
+  - `FluxoCaixa.Lancamento.Api` (endpoints e lógica de lançamentos)
+  - `FluxoCaixa.Consolidacao.Api` (endpoints e lógica de consolidação)
+  Ambos referenciam apenas os sub-projetos de Domínio, Aplicação e Infraestrutura necessários a cada responsabilidade.
+
+- **Criar um API Gateway com Ocelot:**
+  - Roteia chamadas HTTP a cada serviço
+  - Centraliza autenticação, CORS e logging
+
+- **Adicionar mensageria (RabbitMQ)** para eventos entre serviços.
+
+- **Usar cache distribuído (Redis)** em cada microserviço.
+
+- **Dockerizar** cada API e o Gateway (Dockerfiles) e orquestrar via `docker-compose` junto a RabbitMQ e Redis.
+
+- **Provisionar bancos de dados dedicados:** cada microserviço com seu próprio BD (ex.: SQL Server, PostgreSQL), configurando EF Core, migrations e connection strings isoladas.
+
+- **Ajustar `Program.cs` de cada serviço:** configurar apenas endpoints e DI específicos, externalizar settings por variáveis de ambiente.
+
+- **Extrair camada comum (Domínio e Aplicação):** converter projetos em bibliotecas compartilhadas (NuGet local ou submódulo) para ambos os serviços.
+
+- **Adicionar health checks e observabilidade:** usar `services.AddHealthChecks()`, endpoints `/health`, logs estruturados (Serilog) e métricas (OpenTelemetry/Prometheus).
+
+- **Implementar versionamento de API e contratos:** configurar Swagger/OpenAPI v1, definir rotas versionadas (`/api/v1/...`) e testes de contratos (ex.: Pact).
+
+- **Dockerizar e orquestrar:** criar Dockerfile para cada serviço e `docker-compose.yml` com serviços `lancamento`, `consolidacao`, `rabbitmq` e `redis`, definindo networks e restart policies.
+
+- **Configurar pipeline CI/CD:** GitHub Actions ou Azure DevOps para build, testes, publicação de imagens em registry e deploy automatizado.
