@@ -1,100 +1,99 @@
-# FluxoCaixa - Controle de Fluxo de Caixa Diário
+# FluxoCaixa
 
-## Visão Geral
-FluxoCaixa é uma API C# para registro de lançamentos financeiros (créditos e débitos) e consolidação diária de saldo. A arquitetura segue um monolito modular com camadas bem definidas (API, Aplicação, Domínio, Infraestrutura), preparada para escalabilidade, resiliência e segurança.
+API em C# para controle de lançamentos financeiros e consolidação diária de saldos, projetada com Clean Architecture para fácil evolução em microsserviços.
 
-## Pontos Principais
-- **Modularidade & SOLID**: separação por camadas e interfaces, facilitando manutenção e testes.
-- **Resiliência**: Retry Policy em operações críticas e Circuit Breaker no serviço de consolidação.
-- **Escalabilidade**: Instâncias múltiplas do monolito atrás de load balancer; cache em memória para reduzir carga de banco.
-- **Isolamento**: falha no serviço de consolidação não interrompe registro de lançamentos.
-- **Segurança**: Autenticação JWT, CORS configurável e segredos em `appsettings.json` (recomenda-se variáveis de ambiente).
+## Tecnologias
 
-## Por que escolhi este design
-Como desenvolvedor, optei por este monolito modular porque:
-- **Modularidade e manutenção:** isola domínios e facilita testes e evolução.
-- **Desempenho inicial:** comunicação em memória sem overhead de rede.
-- **Resiliência:** retry e circuit breaker garantem disponibilidade contínua.
-- **Escalabilidade futura:** módulos podem evoluir em microsserviços conforme a demanda.
-- **Simplicidade de deploy:** único artefato e pipeline simplificam o processo de entrega.
+- .NET 8 e ASP.NET Core Web API
+- Entity Framework Core (SQL Server ou InMemory)
+- Injeção de Dependência (Microsoft DI)
+- Padrões: Repository, Circuit Breaker, Retry Policy, Cache
+- Autenticação JWT e configuração de CORS
+- Testes unitários: xUnit e Moq
+- Diagramas em Mermaid
 
-## Fluxograma Atual
+## Arquitetura Atual
+
 ```mermaid
-graph TD
+flowchart TD
     subgraph API
         A[Cliente/Frontend] -->|HTTP REST| B[LancamentoController]
         B --> C[LancamentoService]
         C --> D[DinheiroEntradaRepositorio]
+        C -.->|Cache| I[MemoryCache]
         A -->|HTTP REST| E[ConsolidacaoController]
         E --> F[ConsolidacaoService]
         F --> G[ConsolidacaoDiariaRepositorio]
+        F -.->|Cache| I[MemoryCache]
     end
-    C --> H[(Banco de Dados)]
-    G --> H
-    C -.->|Cache| I[MemoryCache]
-    F -.->|Cache| I
-``` 
+    C & G --> H[(Banco de Dados)]
+```
 
-## Fluxograma de Evolução
+## Evolução para Microsserviços
+
 ```mermaid
-graph TD
-    subgraph Microsserviços
-        A[Cliente/Frontend] -->|API Gateway| B[Gateway]
+flowchart TD
+    subgraph Gateway
+        A[Cliente/Frontend] -->|HTTPS| B[API Gateway]
+    end
+    subgraph Services
         B --> C[Lancamento Service]
         B --> D[Consolidacao Service]
     end
-    C -->|Eventos| E[(RabbitMQ/Kafka)]
+    C -->|Eventos| E[(Message Broker)]
     D -->|Eventos| E
-    C -->|Redis Cache| F[(Redis)]
-    D -->|Redis Cache| F
+    C & D -->|Cache Distribuído| F[(Redis)]
     E --> G[(Banco de Dados)]
-``` 
+```
 
 ## Como Rodar Localmente
-1. **Pré-requisitos**:
-   - .NET 8 SDK
-   - SQL Server local ou remoto
-2. **Configurar string de conexão**:
-   No `appsettings.json`, adicione:
+
+1. **Pré-requisitos**  
+   - .NET 8 SDK  
+   - SQL Server local ou remoto (opcional: InMemory)
+
+2. **Configurar string de conexão**  
+   Edite `src/FluxoCaixa.Api/appsettings.json`:
    ```json
    "ConnectionStrings": {
-     "FluxoCaixaDB": "Server=SEU_SERVIDOR;Database=FluxoCaixaDb;User Id=SEU_USUARIO;Password=SUA_SENHA;"
+     "FluxoCaixaDb": "Server=<SERVIDOR>;Database=FluxoCaixa;User Id=<USUARIO>;Password=<SENHA>;TrustServerCertificate=True;"
    }
    ```
-3. **Restaurar dependências**:
-```powershell
-dotnet restore
-```
-4. **Executar a aplicação**:
-```powershell
-dotnet run --project src/FluxoCaixa.Api/FluxoCaixa.Api.csproj
-```
-5. **Acessar Swagger**: `https://localhost:7150/swagger`
-6. **Banco de Dados**:
-   - **InMemory** (padrão):
-     ```csharp
-     services.AddDbContext<FluxoCaixaContexto>(options =>
-         options.UseInMemoryDatabase("FluxoCaixaDb"));
-     ```
-   - **SQL Server**:
-     ```csharp
-     services.AddDbContext<FluxoCaixaContexto>(options =>
-         options.UseSqlServer(
-             builder.Configuration.GetConnectionString("DefaultConnection")));
-     ```
-   - **Exemplo de connection string** em `appsettings.json`:
-     ```json
-     "ConnectionStrings": {
-       "DefaultConnection": "Data Source=DESKTOP\\PRD,16000;Initial Catalog=Fluxo_Caixa;User ID=sa;Password=1234568;Min Pool Size=5;Max Pool Size=100;Connection Lifetime=600;MultipleActiveResultSets=True;TrustServerCertificate=True"
-     }
-     ```
-7. **Executar testes**:
-```powershell
-dotnet test
-```
 
-## Possíveis Evoluções Futuras
-- Cache distribuído (Redis) para suportar múltiplas instâncias.
-- Integração de mensageria (RabbitMQ/Kafka) para desacoplamento por eventos.
-- Containerização (Docker/Kubernetes) e CI/CD.
-- Monitoramento centralizado (Prometheus, Application Insights) e métricas de performance.
+3. **Restaurar e compilar**  
+   ```bash
+   dotnet restore
+   dotnet build
+   ```
+
+4. **Executar API**  
+   ```bash
+   cd src/FluxoCaixa.Api
+   dotnet run
+   ```
+
+5. **Swagger**  
+   Abra no navegador: `https://localhost:5001/swagger`
+
+6. **Executar testes**  
+   ```bash
+   cd tests
+   dotnet test
+   ```
+
+## Por que esta abordagem?
+
+- **Monolito modular**: entrega rápida com fronteiras claras (API, Aplicação, Domínio, Infra).  
+- **Clean Architecture**: desacoplamento via interfaces, facilita testes e manutenção.  
+- **Políticas de resiliência**: Retry Policy e Circuit Breaker garantem disponibilidade.  
+- **Cache em memória**: reduz latência e descongestiona o banco.  
+- **JWT e CORS**: segurança e flexibilidade para diferentes clientes.  
+- **Evolução gradativa**: módulos podem migrar para microsserviços sem refatoração massiva.
+
+## Futuras melhorias
+
+- Cache distribuído (Redis)  
+- Mensageria (RabbitMQ/Kafka)  
+- Containerização (Docker, Kubernetes)  
+- CI/CD (GitHub Actions, Azure DevOps)  
+- Monitoramento e métricas (Prometheus, Application Insights)
