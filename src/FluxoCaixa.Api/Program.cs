@@ -92,6 +92,20 @@ builder.Services.AddDbContext<FluxoCaixaContexto>(options =>
 builder.Services.AddFluxoCaixaInfrastructure();
 builder.Services.AddFluxoCaixaApplication();
 
+// Configura CORS antes de Build para evitar coleção somente leitura
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Development", policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader());
+
+    options.AddPolicy("Production", policy =>
+        policy.WithOrigins("https://localhost:7150")
+              .WithMethods("POST", "GET")
+              .AllowAnyHeader());
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -102,22 +116,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-// CORS configuration
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("Development", builder =>
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader());
-
-    options.AddPolicy("Production", builder =>
-        builder.WithOrigins("https://localhost:7150")
-               .WithMethods("POST", "GET")
-               .AllowAnyHeader());
-});
-
-
 
 // Use CORS policy based on environment
 if (app.Environment.IsDevelopment())

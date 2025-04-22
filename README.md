@@ -74,7 +74,8 @@ flowchart TD
    ```
 
 5. **Swagger**  
-   Abra no navegador: `https://localhost:5001/swagger`
+   Abra no navegador em `https://localhost:<porta>/swagger/index.html`  
+   (porta exibida na saída do console, ex: `https://localhost:7185/swagger/index.html`)
 
 6. **Executar testes unitários**  
    No diretório raiz do projeto:  
