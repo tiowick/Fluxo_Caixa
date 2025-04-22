@@ -20,9 +20,6 @@ namespace FluxoCaixa.Api.Modulos.Consolidacao.Controllers
             _consolidacaoServico = consolidacaoServico;
         }
 
-        /// <summary>
-        /// Atualiza o consolidado diário para uma data específica.
-        /// </summary>
         [HttpPost("atualizar")]
         public async Task<IActionResult> AtualizarConsolidado([FromQuery] DateTime data)
         {
@@ -35,9 +32,6 @@ namespace FluxoCaixa.Api.Modulos.Consolidacao.Controllers
             catch (Exception ex) { return Error($"Erro ao atualizar consolidação: {ex.Message}", System.Net.HttpStatusCode.InternalServerError); }
         }
 
-        /// <summary>
-        /// Obtém o consolidado diário por data.
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> ObterPorData([FromQuery] DateTime data)
         {

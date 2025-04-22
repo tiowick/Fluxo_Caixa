@@ -29,7 +29,7 @@ namespace FluxoCaixa.Tests
             _consolidacaoRepoMock = new Mock<IConsolidacaoDiariaRepositorio>();
             _lancamentoRepoMock = new Mock<IDinheiroEntradaRepositorio>();
             _loggerMock = new Mock<ILogger<ConsolidacaoServico>>();
-            _retryPolicy = new NoOpRetryPolicy(); // Implementação simples para testes
+            _retryPolicy = new NoOpRetryPolicy();
             _cacheMock = new Mock<ICache>();
             _servico = new ConsolidacaoServico(
                 _consolidacaoRepoMock.Object,
@@ -43,15 +43,13 @@ namespace FluxoCaixa.Tests
         [Fact]
         public async Task ObterConsolidadoDiarioAsync_DeveRetornarConsolidadoExistente()
         {
-            // Arrange
+           
             var data = DateTime.Today;
             var consolidado = new ConsolidacaoDiaria(data, 100);
             _consolidacaoRepoMock.Setup(r => r.ObterPorDataAsync(data)).ReturnsAsync(consolidado);
 
-            // Act
             var resultado = await _servico.ObterConsolidadoDiarioAsync(data);
 
-            // Assert
             Assert.Same(consolidado, resultado);
             _consolidacaoRepoMock.Verify(r => r.ObterPorDataAsync(data), Times.Once);
         }
@@ -59,7 +57,7 @@ namespace FluxoCaixa.Tests
         [Fact]
         public async Task ObterConsolidadoDiarioAsync_SeNaoExistir_DeveAtualizarEObter()
         {
-            // Arrange
+            
             var data = DateTime.Today;
             var consolidado = new ConsolidacaoDiaria(data, 200);
             int callCount = 0;
@@ -74,10 +72,8 @@ namespace FluxoCaixa.Tests
             _lancamentoRepoMock.Setup(r => r.ObterSaldoPorDataAsync(data)).ReturnsAsync(200);
             _consolidacaoRepoMock.Setup(r => r.AdicionarAsync(It.IsAny<ConsolidacaoDiaria>())).ReturnsAsync(consolidado);
 
-            // Act
             var resultado = await _servico.ObterConsolidadoDiarioAsync(data);
 
-            // Assert
             Assert.Same(consolidado, resultado);
             _consolidacaoRepoMock.Verify(r => r.AdicionarAsync(It.IsAny<ConsolidacaoDiaria>()), Times.Once);
         }
@@ -85,33 +81,29 @@ namespace FluxoCaixa.Tests
         [Fact]
         public async Task AtualizarConsolidadoDiarioAsync_DeveAdicionarSeNaoExistir()
         {
-            // Arrange
+
             var data = DateTime.Today;
             _consolidacaoRepoMock.Setup(r => r.ObterPorDataAsync(data)).ReturnsAsync((ConsolidacaoDiaria)null);
             _lancamentoRepoMock.Setup(r => r.ObterSaldoPorDataAsync(data)).ReturnsAsync(300);
             _consolidacaoRepoMock.Setup(r => r.AdicionarAsync(It.IsAny<ConsolidacaoDiaria>())).ReturnsAsync((ConsolidacaoDiaria c) => c);
 
-            // Act
             await _servico.AtualizarConsolidadoDiarioAsync(data);
 
-            // Assert
             _consolidacaoRepoMock.Verify(r => r.AdicionarAsync(It.IsAny<ConsolidacaoDiaria>()), Times.Once);
         }
 
         [Fact]
         public async Task AtualizarConsolidadoDiarioAsync_DeveAtualizarSeExistir()
         {
-            // Arrange
+            
             var data = DateTime.Today;
             var consolidado = new ConsolidacaoDiaria(data, 400);
             _consolidacaoRepoMock.Setup(r => r.ObterPorDataAsync(data)).ReturnsAsync(consolidado);
             _lancamentoRepoMock.Setup(r => r.ObterSaldoPorDataAsync(data)).ReturnsAsync(500);
             _consolidacaoRepoMock.Setup(r => r.AtualizarAsync(It.IsAny<ConsolidacaoDiaria>())).Returns(Task.CompletedTask);
 
-            // Act
             await _servico.AtualizarConsolidadoDiarioAsync(data);
 
-            // Assert
             _consolidacaoRepoMock.Verify(r => r.AtualizarAsync(It.Is<ConsolidacaoDiaria>(c => c.SaldoConsolidado == 500)), Times.Once);
         }
         

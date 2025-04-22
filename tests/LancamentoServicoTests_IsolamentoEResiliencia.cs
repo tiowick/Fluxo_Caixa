@@ -40,7 +40,7 @@ namespace FluxoCaixa.Tests
         [Fact(DisplayName = "Lancamento deve funcionar sob alta concorrência (resiliência)")]
         public async Task Lancamento_DeveSerResiliente_EmPicoDeConcorrencia()
         {
-            // Arrange
+            
             var repoMock = new Mock<IDinheiroEntradaRepositorio>();
             repoMock.Setup(r => r.AdicionarAsync(It.IsAny<DinheiroEntrada>())).ReturnsAsync((DinheiroEntrada d) => d);
             var retryPolicy = new NoOpRetryPolicy();

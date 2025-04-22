@@ -22,9 +22,6 @@ namespace FluxoCaixa.Api.Modulos.Lancamento.Controllers
             _lancamentoServico = lancamentoServico;
         }
 
-        /// <summary>
-        /// Registra um novo lançamento de caixa.
-        /// </summary>
         [HttpPost]
         public async Task<IActionResult> RegistrarLancamento([FromBody] LancamentoRequest request)
         {
@@ -46,9 +43,6 @@ namespace FluxoCaixa.Api.Modulos.Lancamento.Controllers
             catch (Exception ex) { return Error($"Erro inesperado ao registrar lançamento: {ex.Message}", System.Net.HttpStatusCode.InternalServerError); }
         }
 
-        /// <summary>
-        /// Obtém os lançamentos de caixa por data.
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> ObterPorData([FromQuery] DateTime data)
         {
